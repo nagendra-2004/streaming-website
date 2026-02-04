@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlow | Watch & Chill</title>
+    
+    <!-- Importing Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-dark: #0f0c29;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --card-bg: #1a1a2e;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            
+            /* Colorful Accents */
+            --primary: #ff00cc; /* Neon Pink */
+            --secondary: #333399; /* Deep Purple */
+            --accent-cyan: #00f2ff;
+            --accent-orange: #ff9100;
+            
+            --radius: 16px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+            --glow: 0 0 20px rgba(255, 0, 204, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- LAYOUT UTILITIES --- */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- HEADER / NAVBAR --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 12, 41, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-cyan), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            z-index: 102; /* Above mobile menu overlay */
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            font-weight: 600;
+            transition: color 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-bar {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            margin-left: 10px;
+            width: 120px;
+            transition: width 0.3s;
+        }
+
+        .search-bar input:focus {
+            width: 200px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid var(--accent-cyan);
+            cursor: pointer;
+        }
+
+        /* --- MOBILE MENU TOGGLE --- */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            z-index: 102;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        /* --- HERO SECTION (MAIN PLAYER) --- */
+        .hero {
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-player-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            background: #000;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.15);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        /* Gradient overlay for "Live" or "HDR" badges */
+        .main-player-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            border-radius: var(--radius);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 600px;
+            object-fit: cover;
+        }
+
+        .video-info {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .video-details h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .video-details .tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 0, 204, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 0, 204, 0.6);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* --- CATEGORY PILLS --- */
+        .categories {
+            padding: 20px 0;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .categories::-webkit-scrollbar { display: none; } /* Chrome */
+
+        .category-pill {
+            background: var(--card-bg);
+            padding: 10px 25px;
+            border-radius: 50px;
+            white-space: nowrap;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .category-pill:hover, .category-pill.active {
+            background: var(--accent-cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        /* --- VIDEO GRID --- */
+        .section-header {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .live-dot {
+            height: 10px;
+            width: 10px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff0000;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding-bottom: 60px;
+        }
+
+        .video-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.4s ease;
+            position: relative;
+        }
+
+        /* Filtering State: Hidden */
+        .video-card.hidden {
+            display: none;
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .thumbnail-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #222;
+        }
+
+        .thumbnail-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .views {
+            color: var(--accent-cyan);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background: #1a1a2e;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: 0.4s ease-in-out;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+            
+            /* Animation for hamburger */
+            .hamburger.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 6px);
+            }
+            .hamburger.active span:nth-child(2) {
+                opacity: 0;
+            }
+            .hamburger.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(5px, -6px);
+            }
+
+            .video-info { flex-direction: column; gap: 15px; }
+            .categories { justify-content: flex-start; }
+            
+            .search-bar { display: none; } /* Hide search on mobile to save space */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">StreamFlow</div>
+            
+            <!-- Navigation with Filters -->
+            <nav class="nav-links" id="mainNav">
+                <!-- data-filter matches the data-category on cards -->
+                <a href="#" class="nav-item active" data-filter="all">Home</a>
+                <a href="#" class="nav-item" data-filter="live">Live</a>
+                <a href="#" class="nav-item" data-filter="movies">Movies</a>
+                <a href="#" class="nav-item" data-filter="gaming">Gaming</a>
+                <a href="#" class="nav-item" data-filter="tech">Tech</a>
+                <a href="#" class="nav-item" data-filter="sports">Sports</a>
+            </nav>
+
+            <div class="user-actions">
+                <div class="search-bar">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <!-- Mobile Hamburger -->
+                <div class="hamburger" id="hamburgerBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="avatar">U</div>
+            </div>
+        </header>
+
+        <!-- Main Hero Player -->
+        <section class="hero">
+            <div class="main-player-wrapper">
+                <video id="mainVideo" controls poster="https://picsum.photos/seed/poster1/1000/600">
+                    <source src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <div class="video-info">
+                <div class="video-details">
+                    <h1 id="videoTitle">Sintel - Blender Open Movie</h1>
+                    <div class="tags">
+                        <span class="tag">4K Ultra HD</span>
+                        <span class="tag">Animation</span>
+                        <span class="tag">Fantasy</span>
+                    </div>
+                    <p id="videoDesc" style="color: #ccc;">A lonely young woman, Sintel, helps and befriends a dragon, whom she calls Scales. But when he is kidnapped by an adult dragon, Sintel sets out on a quest to save him.</p>
+                </div>
+                <div class="video-actions">
+                    <button class="btn btn-primary">Subscribe</button>
+                    <button class="btn btn-outline">👍 Like</button>
+                    <button class="btn btn-outline">🔗 Share</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories (Synced with Navigation) -->
+        <div class="categories" id="categoryPills">
+            <div class="category-pill active" data-filter="all">All</div>
+            <div class="category-pill" data-filter="gaming">Gaming</div>
+            <div class="category-pill" data-filter="music">Music</div>
+            <div class="category-pill" data-filter="movies">Movies</div>
+            <div class="category-pill" data-filter="tech">Tech</div>
+            <div class="category-pill" data-filter="travel">Travel</div>
+            <div class="category-pill" data-filter="vlogs">Vlogs</div>
+        </div>
+
+        <!-- Video Grid -->
+        <div class="section-header">
+            <div class="live-dot"></div>
+            <h2>Trending Now</h2>
+        </div>
+
+        <div class="video-grid">
+            <!-- Card 1: Movies -->
+            <div class="video-card" data-category="movies" onclick="changeVideo('https://media.w3.org/2010/05/bunny/trailer.mp4', 'Big Buck Bunny', 'A large and lovable rabbit deals with three tiny bullies, led by a flying squirrel, who are determined to squelch his happiness.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/bunny/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">10:34</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Big Buck Bunny - Official Trailer</div>
+                    <div class="card-meta">
+                        <span>Blender Foundation</span>
+                        <span class="views">2.4M views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Movies/Nature -->
+            <div class="video-card" data-category="movies" onclick="changeVideo('https://media.w3.org/2010/05/video/movie_300.mp4', 'Nature Documentary Vol. 1', 'Explore the breathtaking landscapes and wildlife of the northern hemisphere in stunning high definition.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/nature/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">04:12</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Nature Documentary Vol. 1</div>
+                    <div class="card-meta">
+                        <span>Earth Pix</span>
+                        <span class="views">800K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Gaming -->
+            <div class="video-card" data-category="gaming" onclick="changeVideo('https://www.w3schools.com/html/mov_bbb.mp4', 'Gaming Highlights: Pro League', 'The best moments from the finals of the International Gaming Championship 2024.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/gaming/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">15:20</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Gaming Highlights: Pro League</div>
+                    <div class="card-meta">
+                        <span>ProGamer TV</span>
+                        <span class="views">1.2M views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Live (Music/Vibe) -->
+            <div class="video-card" data-category="live" onclick="changeVideo('https://media.w3.org/2010/05/sintel/trailer.mp4', 'Cyberpunk City Ambience', 'Relax and focus with 4K neon city ambience, rain sounds, and futuristic synthwave music.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/neon/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">LIVE</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Cyberpunk City Ambience 🎧</div>
+                    <div class="card-meta">
+                        <span>Lofi Beats</span>
+                        <span class="views" style="color: #ff0000;">12K Watching</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5: Vlogs -->
+            <div class="video-card" data-category="vlogs" onclick="changeVideo('https://media.w3.org/2010/05/bunny/trailer.mp4', 'Cooking Masterclass: Steak', 'Learn how to cook the perfect steak from Gordon Ramsay himself. Tips, tricks, and secrets revealed.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/food/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">08:45</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Cooking Masterclass: Steak</div>
+                    <div class="card-meta">
+                        <span>Kitchen Heroes</span>
+                        <span class="views">300K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 6: Tech -->
+            <div class="video-card" data-category="tech" onclick="changeVideo('https://media.w3.org/2010/05/video/movie_300.mp4', 'Space Exploration 2024', 'New discoveries from the James Webb Telescope are changing everything we know about the universe.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/space/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">22:10</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Space Exploration 2024</div>
+                    <div class="card-meta">
+                        <span>Science Today</span>
+                        <span class="views">4.1M views</span>
+                    </div>
+                </div>
+            </div>
+
+             <!-- Card 7: Travel -->
+             <div class="video-card" data-category="travel" onclick="changeVideo('https://www.w3schools.com/html/mov_bbb.mp4', 'Top 10 Travel Destinations', 'Pack your bags! Here are the top 10 destinations you need to visit this summer.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/travel/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">12:05</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Top 10 Travel Destinations</div>
+                    <div class="card-meta">
+                        <span>Travel Guide</span>
+                        <span class="views">900K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 8: Movies -->
+            <div class="video-card" data-category="movies" onclick="changeVideo('https://media.w3.org/2010/05/sintel/trailer.mp4', 'Abstract Art Compilation', 'A visual journey through shapes, colors, and motion designed to stimulate your mind.')">
+                <div class="thumbnail-wrapper">
+                    <img src="https://picsum.photos/seed/art/400/225" alt="Thumbnail">
+                    <div class="play-overlay"><div class="play-icon">▶</div></div>
+                    <span class="duration">03:30</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Abstract Art Compilation</div>
+                    <div class="card-meta">
+                        <span>Art Daily</span>
+                        <span class="views">150K views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Main Video Player Logic ---
+        function changeVideo(src, title, desc) {
+            const videoPlayer = document.getElementById('mainVideo');
+            const videoTitle = document.getElementById('videoTitle');
+            const videoDesc = document.getElementById('videoDesc');
+
+            videoPlayer.src = src;
+            videoPlayer.play();
+
+            videoTitle.innerText = title;
+            videoDesc.innerText = desc;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 2. Navigation & Filtering Logic ---
+        
+        // Select all nav links and category pills
+        const navLinks = document.querySelectorAll('.nav-item');
+        const categoryPills = document.querySelectorAll('.category-pill');
+        const videoCards = document.querySelectorAll('.video-card');
+
+        // Function to handle filtering
+        function filterContent(filterValue) {
+            // Loop through all cards
+            videoCards.forEach(card => {
+                const category = card.getAttribute('data-category');
+                
+                if (filterValue === 'all' || category === filterValue) {
+                    card.classList.remove('hidden');
+                    // Optional: Add a subtle fade-in animation reset
+                    card.style.opacity = '0';
+                    setTimeout(() => card.style.opacity = '1', 50);
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Setup Event Listeners for Top Navigation
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                // Add active class to clicked link
+                link.classList.add('active');
+
+                // Get filter value
+                const filter = link.getAttribute('data-filter');
+                
+                // Apply filter
+                filterContent(filter);
+
+                // Sync the bottom pills to match (optional UX enhancement)
+                updatePills(filter);
+                
+                // Close mobile menu if open
+                const navMenu = document.getElementById('mainNav');
+                const hamburger = document.getElementById('hamburgerBtn');
+                if(navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                    hamburger.classList.remove('active');
+                }
+            });
+        });
+
+        // Setup Event Listeners for Category Pills
+        categoryPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                // Remove active class from all pills
+                categoryPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+
+                const filter = pill.getAttribute('data-filter');
+                filterContent(filter);
+
+                // Sync Top Nav (Optional: find the nav link that matches and make it active)
+                // We use 'all' if the specific pill doesn't exist in top nav
+                let matchingNav = document.querySelector(`.nav-item[data-filter="${filter}"]`);
+                if(!matchingNav) matchingNav = document.querySelector(`.nav-item[data-filter="all"]`);
+                
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                if(matchingNav) matchingNav.classList.add('active');
+            });
+        });
+
+        function updatePills(filter) {
+            // Helper to highlight the correct pill when nav is clicked
+            categoryPills.forEach(p => p.classList.remove('active'));
+            let matchingPill = document.querySelector(`.category-pill[data-filter="${filter}"]`);
+            if(matchingPill) matchingPill.classList.add('active');
+        }
+
+        // --- 3. Mobile Menu Toggle ---
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mainNav = document.getElementById('mainNav');
+
+        hamburgerBtn.addEventListener('click', () => {
+            mainNav.classList.toggle('active');
+            hamburgerBtn.classList.toggle('active');
+        });
+
+    </script>
+</body>
+</html>
